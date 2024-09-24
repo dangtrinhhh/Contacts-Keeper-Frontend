@@ -1,7 +1,8 @@
 import React, { useState, useEffect, memo } from 'react'
-import { Button, Space, DatePicker, Input } from 'antd';
+import { Button, Space, DatePicker, Input, message } from 'antd';
 import { UserOutlined, MailOutlined, HomeOutlined, PhoneOutlined } from '@ant-design/icons';
 import useAxiosPrivate from "../../hooks/useAxiosPrivate";
+import { AddContact } from '../../services/ContactsServices';
 import moment from 'moment';
 
 const AddContactForm = ({ addContactToTable }) => {
@@ -22,30 +23,23 @@ const AddContactForm = ({ addContactToTable }) => {
 
     const handleAddContacts = async () => {
         const user_id = JSON.parse(localStorage.getItem('user_data')).id;
-        
+
         if (user_id) {
             try {
-                const response = await axiosPrivate.post(
-                    `/api/contacts`, 
-                    {   
-                        user_id: user_id,
-                        name: name,
-                        email: email,
-                        phone_number: phoneNumber,
-                        address: address,
-                        date_of_birth: birthday
-                    },
-                    { 
-                        headers: { 'Content-Type': 'application/json' },
-                        withCredentials: true 
-                    }
-                );
-                
-                addContactToTable(response.data);
+                const newContact = {
+                    user_id: user_id,
+                    name: name,
+                    email: email,
+                    phone_number: phoneNumber,
+                    address: address,
+                    date_of_birth: birthday
+                };
 
-                // setContacts(response.data);
+                const data = await AddContact(axiosPrivate, newContact);
+                addContactToTable(data);
+                message.success('Add contact successfully.');
             } catch (error) {
-                // setLoading(false);
+                message.error('Failed to add contact.');
                 throw new Error(error.message);
             }
         }

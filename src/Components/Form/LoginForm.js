@@ -3,14 +3,13 @@ import { Input, Button, message } from 'antd';
 import { UserOutlined, KeyOutlined } from '@ant-design/icons';
 import axios from '../../api/axios';
 import useAuth from '../../hooks/useAuth';
-import { AuthProvider, AuthContext } from '../../Context/AuthProvider';
+import { AuthProvider } from '../../Context/AuthProvider';
 
 const LoginForm = ({ onLoginSuccess }) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const { auth, setAuth } = useAuth();
-    console.log("🚀 ~ LoginForm auth state:", auth);
 
     useEffect(() => {
         console.log("🚀 ~ auth:", auth)
@@ -30,26 +29,16 @@ const LoginForm = ({ onLoginSuccess }) => {
                     withCredentials: true
                 }
             );
-            console.log("🚀 ~ response:", response.cookies)
 
             // Handle login success
             if (response.data) {
                 message.success('Login successful!');
-                console.log('Login response:', response.data);
                 const userData = response.data;
-                console.log("🚀 ~ Setting auth with userData:", userData);
                 
                 setAuth(userData);
-
-                // // Save access token and user data to localStorage
-                // localStorage.setItem('access_token', response.data.accessToken);
-
-                // localStorage.setItem('user_data', JSON.stringify(response.data.user));
-
                 onLoginSuccess(response.data.user);
             }
         } catch (error) {
-            console.error('Login error:', error);
             message.error(error.response.data.message);
         } finally {
             setLoading(false);

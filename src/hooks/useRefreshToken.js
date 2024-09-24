@@ -3,7 +3,6 @@ import useAuth from './useAuth';
 
 const useRefreshToken = () => {
     const { auth, setAuth } = useAuth();
-    const controller = new AbortController();
 
     const refresh = async () => {
         console.log("Refresh token");
@@ -13,23 +12,16 @@ const useRefreshToken = () => {
             {
                 headers: { 'Content-Type': 'application/json' },
                 withCredentials: true,
-                signal: controller.signal,
             }
         );
-        console.log("🚀 ~ response:", response)
+
         const newAccessToken = response.data.accessToken;
-        setAuth((prev) => ({ ...prev, accessToken: newAccessToken }));
+        setAuth((prev) => ({ ...prev, accessToken: newAccessToken, auth }));
 
         return newAccessToken;
     }
 
     return refresh;
-    // refresh();
-
-    // return () => {
-    //     refresh();
-    //     controller.abort();
-    // };
 };
 
 export default useRefreshToken;

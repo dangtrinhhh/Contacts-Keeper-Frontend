@@ -1,10 +1,9 @@
-import React, { useEffect, useCallback, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button, Form, Input, InputNumber, Popconfirm, Table, Typography, Space, Modal, message } from 'antd';
 import { EditOutlined, DeleteOutlined, CheckOutlined, CloseOutlined } from '@ant-design/icons';
-import { Link } from 'react-router-dom';
 import AddContactForm from '../Form/AddContactForm';
-import axios from '../../api/axios';
 import useAxiosPrivate from "../../hooks/useAxiosPrivate";
+import { FetchContacts, UpdateContact, DeleteContact } from '../../services/ContactsServices';
 
 const EditableCell = ({
     editing,
@@ -47,7 +46,6 @@ const ContactTable = () => {
     const [showAddContactPrompt, setShowAddContactPrompt] = useState(false);
     const [loading, setLoading] = useState(true);
     const [form] = Form.useForm();
-    const [confirmDelete, setConfirmDelete] = useState(false);
     const [editingKey, setEditingKey] = useState('');
     const isEditing = (record) => record._id === editingKey;
 
@@ -59,28 +57,20 @@ const ContactTable = () => {
     };
 
     const deleteRecord = async (record) => {
-        const { _id, ...contactData } = record;
+        const { _id } = record;
 
         // Delete Contact API
         if (_id) {
             try {
-                const response = await axiosPrivate.delete(`/api/contacts/${_id}`, {}, {
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    withCredentials: true,
-                });
-
+                DeleteContact(axiosPrivate, _id);
                 message.success('Delete contact successfully.');
             } catch (error) {
                 message.error('Failed to delete contact.');
-                console.error("Failed to update contact:", error.message);
             }
         }
 
         const newContacts = contacts.filter((item) => item._id !== record._id);
         setContacts(newContacts);
-        setConfirmDelete(false);
     };
 
     const handleOk = () => {
@@ -93,7 +83,6 @@ const ContactTable = () => {
 
     const cancel = () => {
         setEditingKey('');
-        setConfirmDelete(false);
     };
 
     // Save edited record
@@ -109,17 +98,12 @@ const ContactTable = () => {
                     ...row,
                 });
 
-                const { _id, ...contactData } = newData[index];
+                const { _id } = newData[index];
 
                 // Update Contact API
                 if (_id) {
                     try {
-                        const response = await axiosPrivate.put(`/api/contacts/${_id}`, newData[index], {
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            withCredentials: true,
-                        });
+                        UpdateContact(axiosPrivate, _id, newData[index]);
                         message.success('Edit contact successfully.');
                     } catch (error) {
                         message.error('Failed to update contact');
@@ -129,7 +113,6 @@ const ContactTable = () => {
 
                 setContacts(newData);
                 setEditingKey('');
-
             } else {
                 newData.push(row);
                 setContacts(newData);
@@ -142,15 +125,14 @@ const ContactTable = () => {
     };
 
     const convertDate = (dateString) => {
-        // Chuyển chuỗi ngày thành đối tượng Date
         const date = new Date(dateString);
 
-        // Lấy ngày, tháng và năm
-        const day = String(date.getDate()).padStart(2, '0'); // Thêm số 0 phía trước nếu ngày chỉ có 1 chữ số
-        const month = String(date.getMonth() + 1).padStart(2, '0'); // Tháng trong JS bắt đầu từ 0 nên cần cộng thêm 1
+        // Get dat, month, year
+        const day = String(date.getDate()).padStart(2, '0'); // Add 0 in front of day if it contain 1 digit
+        const month = String(date.getMonth() + 1).padStart(2, '0'); // Month in JS start from 0 to 11 => add 1
         const year = date.getFullYear();
 
-        // Trả về chuỗi định dạng ngày/tháng/năm
+        // Return string day/month/year
         return `${day}/${month}/${year}`;
     }
 
@@ -209,7 +191,7 @@ const ContactTable = () => {
                             <CheckOutlined style={{ color: "green" }} />
                         </Typography.Link>
                         <Popconfirm title="Sure to cancel?" onConfirm={cancel}>
-                            <a><CloseOutlined style={{ color: "red" }} /></a>
+                            <p><CloseOutlined style={{ color: "red" }} /></p>
                         </Popconfirm>
                     </span>
                 ) : (
@@ -251,9 +233,10 @@ const ContactTable = () => {
     });
 
     const addContactToTable = (newContact) => {
-        newContact.date_of_birth = convertDate(newContact.date_of_birth);
-        setContacts((prevContacts) => [...prevContacts, newContact]);
-
+        if (newContact.date_of_birth) {
+            newContact.date_of_birth = convertDate(newContact.date_of_birth);
+            setContacts((prevContacts) => [...prevContacts, newContact]);
+        }
         // Hide add contact form
         setShowAddContactPrompt(false);
     };
@@ -266,11 +249,8 @@ const ContactTable = () => {
 
             if (user_id) {
                 try {
-                    const response = await axiosPrivate.get(`/api/contacts/${user_id}`, {
-                        signal: controller.signal,
-                    });
-
-                    const contacts_list = response.data;
+                    // Fetch Contacts
+                    const contacts_list = await FetchContacts(axiosPrivate, user_id);
                     contacts_list.map((item) => item.date_of_birth = convertDate(item.date_of_birth));
 
                     setContacts(contacts_list);
@@ -288,7 +268,7 @@ const ContactTable = () => {
         return () => {
             controller.abort()
         }
-    }, [])
+    }, [axiosPrivate])
 
     return (
         <Form form={form} component={false}>

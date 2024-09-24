@@ -1,5 +1,4 @@
-import React, { useEffect, useState, useLayoutEffect } from 'react';
-import { WhatsAppOutlined, GlobalOutlined, HomeOutlined, SettingOutlined, ContactsOutlined } from '@ant-design/icons';
+import React, { useState, useLayoutEffect } from 'react';
 import { Input, Modal, Button, Avatar } from 'antd';
 import { Link } from 'react-router-dom';
 import logoImage from '../img/logo.png'
@@ -27,19 +26,10 @@ export const handleLogout = async () => {
 };
 
 const Navbar = () => {
-    const [current, setCurrent] = useState('home');
     const onSearch = (value, _e, info) => console.log(value);
     const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
     const [isSignupModalOpen, setIsSignupModalOpen] = useState(false);
     const [user, setUser] = useState(null);
-
-    // useEffect(() => {
-    //     // Check if user login
-    //     const userData = localStorage.getItem('user_data');
-    //     if (userData) {
-    //         setUser(JSON.parse(userData));
-    //     }
-    // }, []);
 
     useLayoutEffect(() => {
         // Check if user login
@@ -67,10 +57,6 @@ const Navbar = () => {
         setIsSignupModalOpen(false);
     };
 
-    useEffect(() => {
-        console.log(current)
-    }, [current])
-
     const onLoginSuccess = (userData) => {
         setUser(userData);
         setIsLoginModalOpen(false);
@@ -78,11 +64,6 @@ const Navbar = () => {
 
     const onSignupSuccess = (userData) => {
         setIsSignupModalOpen(false);
-    };
-
-    const onClick = (e) => {
-        console.log('click ', e);
-        setCurrent(e.key);
     };
 
     return (
@@ -120,9 +101,9 @@ const Navbar = () => {
                     // Show login and signup button if user not logged in
                     <>
                         <span onClick={showLoginForm}>
-                            <a className='navbar-item'>
+                            <p className='navbar-item' >
                                 Log in
-                            </a>
+                            </p>
                         </span>
                         <Modal
                             title="Welcome to Contacts Keeper !"
@@ -136,9 +117,9 @@ const Navbar = () => {
                         </Modal>
 
                         <span className='ml-4' onClick={showSignupForm}>
-                            <a className='navbar-item'>
+                            <p className='navbar-item'>
                                 Sign up
-                            </a>
+                            </p>
                         </span>
                         <Modal
                             title="Welcome to Contacts Keeper !"
@@ -152,37 +133,6 @@ const Navbar = () => {
                         </Modal>
                     </>
                 )}
-                {/* <span onClick={showLoginForm}>
-                    <a className='navbar-item'>
-                        Log in
-                    </a>
-                </span>
-                <Modal
-                    title="Welcome to Contacts Keeper !"
-                    centered
-                    open={isLoginModalOpen}
-                    onOk={handleOk}
-                    onCancel={handleCancel}
-                    footer={null}
-                >
-                    <LoginForm />
-                </Modal>
-
-                <span className='ml-4' onClick={showSignupForm}>
-                    <a className='navbar-item'>
-                        Sign up
-                    </a>
-                </span>
-                <Modal
-                    title="Welcome to Contacts Keeper !"
-                    centered
-                    open={isSignupModalOpen}
-                    onOk={handleOk}
-                    onCancel={handleCancel}
-                    footer={null}
-                >
-                    <SignupForm />
-                </Modal> */}
             </div>
         </div >
     );
