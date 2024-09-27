@@ -94,6 +94,11 @@ body {
   color: #424242;
 }
 
+.user-action-section {
+  display: flex;
+  flex-direction: row;
+}
+
 .navbar-item:hover {
   color: #1677ff;
   cursor: pointer;
